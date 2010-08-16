@@ -27,9 +27,9 @@ namespace :db do
       csv.each do |row|
         record = model.create(row.to_hash)
         
-        unless record.errors.empty?
+        unless record.valid?
           STDERR.puts "Line #{line_number} can be imported:"
-          record.errors.each_full { |msg| STDERR.puts msg }
+          STDERR.puts record.errors.full_messages.join("\n")
         end
         
         line_number += 1
