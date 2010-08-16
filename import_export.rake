@@ -23,8 +23,16 @@ namespace :db do
       end
       
       STDOUT.puts "Importing CSV..."
+      line_number = 1
       csv.each do |row|
-        model.create(row.to_hash)
+        record = model.create(row.to_hash)
+        
+        unless record.errors.empty?
+          STDERR.puts "Line #{line_number} can be imported:"
+          record.errors.each_full { |msg| STDERR.puts msg }
+        end
+        
+        line_number += 1
       end
       
       STDOUT.puts "Importation done."
