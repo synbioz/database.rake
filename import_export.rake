@@ -40,6 +40,25 @@ namespace :db do
   end
   
   namespace :export do
-    
+    desc "Export given model data into CSV file; usage: db:export:csv MODEL=model_name [CSV=csv_file_path]"
+    task :csv => :environment do
+      model = ENV['MODEL']
+
+      raise ArgumentError, "You must specify the destination model using MODEL=" if model.nil?
+      model = model.singularize.camelize.constantize
+      path  = ENV['CSV'] || "#{model.to_s.tableize}.csv"
+      
+      STDOUT.puts "Exporting data..."
+
+      FasterCSV.open(path, "w", {:force_quotes => true}) do |csv|
+        csv << model.column_names
+        model.all.each do |record|
+          values = model.column_names.map { |column| record.send(column) }
+          csv << values
+        end
+      end
+      
+      STDOUT.puts "Data exported..."
+    end
   end
 end
