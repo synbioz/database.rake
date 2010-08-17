@@ -60,5 +60,29 @@ namespace :db do
       
       STDOUT.puts "Data exported..."
     end
+    
+    namespace :csv do
+      desc "Export all models data into many CSV files; usage: db:export:csv:all"
+      task :all => :environment do
+        Dir.glob(RAILS_ROOT + '/app/models/*.rb').each { |file| require file }
+        models = Object.subclasses_of(ActiveRecord::Base)
+
+        STDOUT.puts "Exporting all models..."
+        
+        models.each do |model|
+          path  = "#{model.to_s.tableize}.csv"
+
+          FasterCSV.open(path, "w", {:force_quotes => true}) do |csv|
+            csv << model.column_names
+            model.all.each do |record|
+              values = model.column_names.map { |column| record.send(column) }
+              csv << values
+            end
+          end
+        end
+        
+        STDOUT.puts "#{models.size} models exported..."
+      end
+    end
   end
 end
